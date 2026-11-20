@@ -13,7 +13,23 @@
   --line: #E4E4E4;        /* 얇은 구분선 */
   --sky: #8DCBFF;         /* 하늘색 (막대·추천 카드) */
   --sky-text: #B8E0FF;    /* 사진 위 하늘색 글씨 (어두운 막 위 대비 4:1 이상) */
-  --green: #26864A;       /* 초록 버튼·선택 (흰 글씨 대비 4.5:1 이상) */
+  --opt-white: rgba(255, 255, 255, 0.72);  /* 고르지 않은 보기 칸 (검은 글씨) */
+  --opt-blue: rgba(37, 99, 160, 0.9);      /* 고른 보기 칸, 바다색 (밝은 막 위 흰 글씨 대비 5:1 이상) */
+  --sea: #2E6FA8;         /* 바다색 (진행 막대·지금 단계 선) */
+  --sea-text: #17426E;    /* 반투명 시트 위 바다색 글씨 (어두운 사진 위에서도 대비 4.5:1 이상) */
+  --ink-soft: #3D3D3D;    /* 반투명 시트 위 보조 글씨 (사진이 어두운 곳에서도 대비 5:1 이상) */
+  --sheet: #FFFDF8;       /* 종이 시트 (따뜻한 흰색) */
+  --sheet-hover: rgba(255, 255, 255, 0.6);
+  --line-2: rgba(80, 70, 50, 0.22);   /* 종이 위 얇은 선 (반투명 시트 위에서도 보이게) */
+  /* 두 번째 화면부터 사진 위쪽에 덮는 막: 흰 글씨가 읽히는 만큼만 살짝 어둡게 */
+  --photo-veil: linear-gradient(180deg, rgba(14, 32, 52, 0.42) 0%, rgba(14, 32, 52, 0.34) 40%, rgba(14, 32, 52, 0.18) 100%);
+  /* 반투명 종이 시트: 뒤 사진이 비쳐 보임 (0 = 완전 투명, 1 = 불투명) */
+  --sheet-glass: rgba(255, 253, 248, 0.7);
+  --marker: rgba(94, 160, 220, 0.55);       /* 안내 문구 왼쪽 줄 (바다색) */
+  --pick-bg: rgba(46, 111, 168, 0.16);      /* 고른 보기 바탕 (옅은 바다색) */
+  /* (예전) 밝은 하늘빛 막 */
+  --light-veil: linear-gradient(180deg, rgba(244, 249, 255, 0.8) 0%, rgba(244, 249, 255, 0.82) 40%, rgba(244, 249, 255, 0.9) 100%);
+  --green: #2E6FA8;       /* 포인트 (예전 초록 → 밝은 톤에 맞춘 바다색, 흰 글씨 대비 5:1 이상) */
   --page: #EEF0F5;        /* 넓은 화면에서 휴대폰 틀 바깥 */
   --danger: #B3261E;      /* 데이터 오류 안내 전용 */
 
@@ -248,7 +264,6 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
   margin-top: 30%;
   padding: 0 var(--side);
 }
-.hero-kicker { font-size: 17px; font-weight: 600; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.25); }
 #start-title {
   color: var(--paper);
   font-size: clamp(40px, 12vw, 52px);
@@ -256,6 +271,15 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
   line-height: 1.1;
   letter-spacing: -0.05em;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.2);
+}
+/* 제목: 윗줄 "강릉 청년 영크크 냥이들아" + 아랫줄 크게 "“G줴이야” 쓰고 놀러가자" */
+#start-title .title-top { display: block; font-size: clamp(22px, 6.4vw, 26px); font-weight: 700; letter-spacing: -0.03em; }
+#start-title .title-main {
+  display: block;
+  margin-top: 8px;
+  font-size: clamp(36px, 11vw, 46px);
+  line-height: 1.15;
+  letter-spacing: -0.04em;
 }
 .lead { font-size: 16px; line-height: 1.85; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.3); }
 #btn-start { min-width: 132px; min-height: 54px; margin-top: 18px; font-size: 17px; }
@@ -402,10 +426,11 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
 .tip-action { flex: 1 1 140px; background: var(--paper); }
 
 /* ==========================================================================
-   질문 화면 — 첫 화면처럼 강릉 사진 위에 글씨 (단계마다 다른 사진)
-   사진 위에는 어두운 막을 깔아 흰 글씨가 잘 읽히게, 보기 칸은 반투명 흰 유리
+   질문 화면 — 첫 화면을 이어서: 위쪽은 사진 위 흰 글씨, 아래쪽은 종이 시트
+   (유리·그림자·알약 모양 없이 얇은 선과 글자로만)
    ========================================================================== */
 #screen-question { position: relative; isolation: isolate; min-height: 100svh; color: var(--paper); }
+#screen-question.is-active { padding-bottom: 0; }
 #screen-question::before,
 #screen-question::after {
   content: "";
@@ -414,64 +439,270 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
   z-index: -1;
   pointer-events: none;
 }
-/* 사진 */
+/* 사진 (단계마다 다른 사진) */
 #screen-question::before {
-  background: var(--step-photo, url("images/cafe-window.jpg")) center / cover no-repeat;
+  background: var(--step-photo, url("images/cafe-window.jpg")) center 30% / cover no-repeat;
   animation: drift 18s var(--ease) both;
 }
-/* 어두운 막: 위는 옅게, 보기 칸이 있는 아래로 갈수록 진하게 */
-#screen-question::after {
-  background: linear-gradient(180deg, rgba(12, 28, 46, 0.66) 0%, rgba(12, 28, 46, 0.68) 40%, rgba(12, 28, 46, 0.8) 100%);
-}
+/* 흰 글씨가 읽히도록 사진 위쪽만 살짝 어둡게 (첫 화면과 같은 느낌) */
+#screen-question::after { background: var(--photo-veil); }
 #screen-question[data-step="mood"] { --step-photo: url("images/cafe-window.jpg"); }
 #screen-question[data-step="want"] { --step-photo: url("images/pine-beach.jpg"); }
 #screen-question[data-step="area"],
 #screen-question[data-step="cafeType"] { --step-photo: url("images/hero-beach.jpg"); }
-/* 사진이 아주 천천히 확대되며 살아 있는 느낌 */
 @keyframes drift {
   from { transform: scale(1.08); }
   to   { transform: scale(1); }
 }
 
+/* 위쪽: 상자 없는 막대 — 세로 로고 · 얇은 진행선 · 단계 숫자 */
 #screen-question .topbar {
-  background: rgba(12, 28, 46, 0.35);
-  border-bottom-color: rgba(255, 255, 255, 0.18);
+  position: static;
+  background: none;
+  border: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  padding-top: 18px;
 }
-#screen-question .v-mark-small,
+#screen-question .v-mark-small { color: var(--paper); font-size: 18px; }
 #screen-question .step-badge { color: var(--paper); }
-#screen-question .progress-bar { background: rgba(255, 255, 255, 0.25); }
-#screen-question .progress-fill { background: var(--sky); }
+#screen-question .progress-bar { height: 1px; background: rgba(255, 255, 255, 0.35); }
+#screen-question .progress-fill { background: var(--paper); }
 
-#screen-question .step-chip { color: var(--paper); border-bottom-color: rgba(255, 255, 255, 0.28); }
-#screen-question .step-chip-value { color: rgba(255, 255, 255, 0.78); }
-#screen-question .step-chip.is-done { border-bottom-color: var(--paper); }
-#screen-question .step-chip.is-current { border-bottom-color: var(--sky); }
-#screen-question .step-chip.is-current .step-chip-name { color: var(--sky-text); }
-#screen-question .step-chip:disabled:not(.is-current) { color: rgba(255, 255, 255, 0.6); }
-
-#screen-question .question-head::after { color: var(--sky-text); }
-#screen-question .question-title { color: var(--paper); border-bottom-color: var(--paper); }
-#screen-question .question-hint { color: rgba(255, 255, 255, 0.85); }
-
-/* 보기 칸: 반투명 흰 유리 */
-#screen-question .option {
-  background: rgba(255, 255, 255, 0.86);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+/* 단계: 탭 대신 글자 한 줄 "상황 · 종류 · 위치" */
+.step-nav-text,
+#screen-question .step-nav,
+#screen-result .step-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0;
 }
-@media (hover: hover) { #screen-question .option:not(.is-selected):hover { background: var(--paper); } }
-#screen-question .option.is-selected { background: var(--green); }
+#screen-question .step-chip,
+#screen-result .step-chip {
+  flex-direction: row;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+#screen-question .step-chip + .step-chip::before,
+#screen-result .step-chip + .step-chip::before {
+  content: "·";
+  margin: 0 10px 0 4px;
+  opacity: 0.6;
+}
+#screen-question .step-chip-value,
+#screen-result .step-chip-value { display: none; }
+#screen-question .step-chip-name,
+#screen-result .step-chip-name { font-weight: 500; text-decoration: underline; text-underline-offset: 6px; text-decoration-color: transparent; }
+#screen-question .step-chip.is-done .step-chip-name,
+#screen-result .step-chip.is-done .step-chip-name { text-decoration-color: currentColor; }
+#screen-question .step-chip.is-current .step-chip-name { font-weight: 800; color: var(--paper); text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+#screen-question .step-chip:disabled:not(.is-current) { color: rgba(255, 255, 255, 0.6); }
+#screen-question .step-chip { color: var(--paper); }
 
-#screen-question .btn-line { border-color: rgba(255, 255, 255, 0.55); color: var(--paper); }
-@media (hover: hover) { #screen-question .btn-line:hover { border-color: var(--paper); background: rgba(255, 255, 255, 0.1); } }
-#screen-question .step-tip { color: var(--ink); }
+/* 질문: 첫 화면처럼 사진 위 흰 글씨, 밑줄 없이 */
+#screen-question .question-head { padding: 8px 8px 28px; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28); }
+#screen-question .question-head::after { color: rgba(255, 255, 255, 0.75); font-weight: 500; }
+#screen-question .question-title { padding: 0; border: 0; color: var(--paper); font-size: 30px; font-weight: 800; }
+#screen-question .question-hint { color: rgba(255, 255, 255, 0.9); }
+
+/* 아래쪽 종이 시트 */
+.q-sheet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 calc(var(--side-tight) * -1);
+  padding: 20px var(--side-tight) 18px;
+  border-radius: 26px 26px 0 0;
+  background: var(--sheet-glass);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  color: var(--ink);
+}
+
+/* 보기: 선만 있는 같은 크기 칸 (가운데 글씨) */
+#screen-question .options:has(> .option:nth-child(5)) {
+  gap: 0;
+  border-top: 1px solid var(--line-2);
+}
+#screen-question .option {
+  min-height: 78px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--line-2);
+  border-radius: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  font-weight: 600;
+}
+#screen-question .options:has(> .option:nth-child(5)) .option:nth-child(odd) { border-right: 1px solid var(--line-2); }
+@media (hover: hover) { #screen-question .option:not(.is-selected):hover { background: var(--sheet-hover); transform: none; } }
+/* 고른 칸: 바다색 */
+#screen-question .option.is-selected { background: var(--opt-blue); color: var(--paper); }
+/* 묶음(group)이 바뀌는 줄: 위쪽 선을 진하게 */
+#screen-question .option.group-start,
+#screen-question .option.group-start + .option { margin-top: 0; border-top: 1.5px solid var(--ink); }
+#screen-question[data-step="mood"] .option { min-height: 58px; }
+#screen-question[data-step="want"] .option { min-height: 72px; }
+#screen-question[data-step="want"] .options { grid-auto-rows: minmax(72px, 1fr); }
+
+/* 글자 버튼: [다음 →] 크게 오른쪽, 아래 [← 이전] [처음으로] */
+.btn-text {
+  min-height: 48px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 7px;
+  text-decoration-color: rgba(17, 17, 17, 0.3);
+}
+.btn-text .roll-track > span { text-decoration: inherit; }
+@media (hover: hover) { .btn-text:hover { text-decoration-color: currentColor; } }
+.btn-text-strong { color: var(--sea-text); font-weight: 800; text-decoration-color: currentColor; }
+.q-sheet .btn-next {
+  align-self: flex-end;
+  width: auto;
+  margin-top: 4px;
+  color: var(--sea-text);
+  font-size: 20px;
+  font-weight: 800;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+}
+.q-sheet .btn-next:disabled { color: var(--ink-soft); text-decoration-color: transparent; }
+#screen-question .question-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+  border-top: 1px solid var(--line-2);
+}
+
+/* ==========================================================================
+   잡지 목록형 (질문 화면) — 표지처럼 왼쪽 정렬 큰 제목, 보기는 묶음별 한 줄에 2개,
+   고르면 옅은 바다색 바탕 + 체크
+   ========================================================================== */
+#screen-question .step-nav { justify-content: flex-start; padding-left: 4px; }
+#screen-question .question-head {
+  align-items: flex-start;
+  gap: 0;
+  padding: 8px 4px 14px;
+  text-align: left;
+}
+#screen-question .question-head::after { font-size: 30px; font-weight: 300; letter-spacing: -0.02em; color: rgba(255, 255, 255, 0.8); }
+#screen-question .question-title { font-size: 34px; line-height: 1.15; letter-spacing: -0.05em; }
+#screen-question .question-hint { margin-top: 6px; font-size: 16px; }
+
+/* 보기: 선택 구분(묶음)별로 한 줄에 2개씩, 같은 너비로 */
+#screen-question .options,
+#screen-question .options:has(> .option:nth-child(5)) {
+  display: grid;
+  flex: 0 0 auto;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: auto;
+  gap: 6px 10px;
+  border: 0;
+}
+#screen-question .option,
+#screen-question .options:has(> .option:nth-child(5)) .option:nth-child(odd) {
+  justify-content: flex-start;
+  min-height: 46px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  text-align: left;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  animation: none;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+#screen-question[data-step="want"] .option { min-height: 54px; font-size: 17px; line-height: 1.3; }
+#screen-question .option .option-label { display: block; -webkit-line-clamp: unset; }
+@media (hover: hover) { #screen-question .option:not(.is-selected):hover { background: rgba(255, 255, 255, 0.55); } }
+
+/* 고른 보기: 옅은 바다색 바탕 + 바다색 글씨 + 오른쪽 작은 체크 (무난하게) */
+#screen-question .option.is-selected,
+#screen-question .option.is-selected:hover {
+  padding-right: 34px;
+  background: var(--pick-bg);
+  color: var(--sea-text);
+}
+#screen-question .option.is-selected::after {
+  display: block;
+  --icon: var(--i-check);
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  color: var(--sea-text);
+}
+
+/* 묶음(group) 사이: 그 줄 위에 얇은 선 (왼쪽 칸과 옆 칸 모두) */
+#screen-question .option.group-start,
+#screen-question .option.group-start + .option {
+  margin-top: 6px;
+  border-top: 0;
+}
+#screen-question .options .option.group-start::before,
+#screen-question .options .option.group-start + .option::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 0;
+  right: -10px;
+  height: 1px;
+  background: var(--line-2);
+}
+#screen-question .options .option.group-start + .option::before { left: -10px; right: 0; }
+
+/* 시트: 위쪽 둥근 모서리 대신 위에 굵은 줄 하나 (잡지 지면처럼)
+   늘어나지 않고 내용만큼만 → 화면 아래쪽 절반 이하만 차지, 위는 사진이 보이게 */
+.q-sheet { flex: 0 0 auto; gap: 2px; border-radius: 0; border-top: 2px solid var(--ink); padding-top: 10px; padding-bottom: 8px; }
+/* 제목은 사진 아래쪽, 시트 바로 위에 붙임 */
+#screen-question .question-head { margin-top: auto; }
+.q-sheet .btn-next { min-height: 44px; margin-top: 0; }
+#screen-question .question-actions .btn-text { min-height: 44px; }
 
 /* ==========================================================================
    결과 화면 — 사진 머리 + 위로 겹쳐 올라온 흰 시트 + 줄 목록 + 회색 정보 상자
    ========================================================================== */
-.result-aside,
-.result-main { display: contents; }
-.result-actions { order: 99; }
+/* 결과 화면 전체 뒤에 솔숲 사진, 위쪽 제목은 사진 위 흰 글씨, 아래는 반투명 종이 시트 */
+#screen-result { position: relative; isolation: isolate; }
+#screen-result::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: url("images/pine-beach.jpg") center top / cover no-repeat;
+}
+.result-sheet {
+  --muted: var(--ink-soft);   /* 시트 안 보조 글씨는 조금 더 진하게 */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin-top: -28px;
+  padding-top: 14px;
+  border-radius: 26px 26px 0 0;
+  background: var(--sheet-glass);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  color: var(--ink);
+}
 
 /* 사진 머리: 바다 앞 솔숲 사진 위에 흰 글씨 */
 .result-head {
@@ -488,35 +719,23 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
 }
 .result-head::before,
 .result-head::after { content: ""; position: absolute; inset: 0; z-index: -1; }
-.result-head::before {
-  background: url("images/pine-beach.jpg") center 35% / cover no-repeat;
-  animation: drift 18s var(--ease) both;
-}
-.result-head::after {
-  background: linear-gradient(180deg, rgba(12, 28, 46, 0.66) 0%, rgba(12, 28, 46, 0.7) 100%);
-}
+.result-head::before { display: none; }
+.result-head::after { background: var(--photo-veil); }
 .result-title {
   padding: 0 6px 6px;
-  border-bottom: 1.5px solid var(--paper);
+  border-bottom: 0;
   color: var(--paper);
-  font-size: 26px;
+  font-size: 30px;
+  font-weight: 800;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.28);
   line-height: 1.25;
   letter-spacing: -0.04em;
 }
-.route-path { color: rgba(255, 255, 255, 0.9); font-size: 16px; line-height: 1.7; }
+.route-path { color: rgba(255, 255, 255, 0.92); font-size: 16px; line-height: 1.7; text-shadow: 0 1px 12px rgba(0, 0, 0, 0.3); }
 
-/* 사진 위로 겹쳐 올라온 흰 시트 (단계 버튼부터 시작) */
-#screen-result { background: var(--paper); }
-#screen-result .step-nav {
-  position: relative;
-  z-index: 1;
-  margin-top: -28px;
-  padding: 26px var(--side-tight) 4px;
-  border-radius: 28px 28px 0 0;
-  background: var(--paper);
-}
+#screen-result .step-nav { padding: 10px var(--side-tight) 4px; }
 
-.result-message { margin: 20px var(--side-tight) 0; padding: 16px; border-radius: 14px; background: var(--gray); }
+.result-message { margin: 20px var(--side-tight) 0; padding: 16px; border-radius: 14px; background: rgba(255, 255, 255, 0.55); }
 .result-message[hidden] { display: none; }
 
 .section-title { padding: 28px var(--side-tight) 10px; font-size: 17px; }
@@ -602,7 +821,7 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
   margin: 0;
   padding: 20px 22px;
   border-radius: 4px;
-  background: var(--gray);
+  background: var(--sheet-hover);
   font-size: 16px;
 }
 .place-fields dt { max-width: 7em; font-weight: 700; }
@@ -629,12 +848,14 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
     border-color var(--dur) var(--ease), transform 0.45s var(--ease);
 }
 .btn-map::after { --icon: var(--i-up-right); width: 16px; height: 16px; }
-.btn-map-web { background: var(--green); border-color: var(--green); color: var(--paper); }
+/* 알약 대신 밑줄이 있는 글자 줄 */
+.btn-map { justify-content: space-between; padding: 0 2px; border: 0; border-bottom: 1px solid var(--ink); border-radius: 0; background: none; }
+.btn-map-web { color: var(--sea-text); font-weight: 800; border-bottom-color: var(--sea-text); }
 @media (hover: hover) {
   .btn-map:hover .roll-track { transform: translateY(-50%); }
   .btn-map:hover::after { transform: translate(2px, -2px); }
-  .btn-map-web:hover { background: var(--ink); border-color: var(--ink); }
-  .btn-map-review:hover { border-color: var(--ink); }
+  .btn-map-web:hover,
+  .btn-map-review:hover { background: var(--sheet-hover); }
 }
 
 /* 다른 동네도 볼래? */
@@ -656,7 +877,7 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
 .other-areas[open] summary::after { transform: rotate(45deg); color: var(--green); }
 .other-groups { display: flex; flex-direction: column; gap: 22px; padding-top: 18px; }
 .other-groups .place-list { padding: 0; }
-.group-title { padding-bottom: 8px; color: var(--green); font-size: 16px; }
+.group-title { padding-bottom: 8px; color: var(--sea-text); font-size: 16px; }
 
 .suggestions { margin: 20px var(--side-tight) 0; }
 .suggestions[hidden] { display: none; }
@@ -664,13 +885,23 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
 .suggestion-list { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .result-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: auto;
-  padding: 36px var(--side-tight) 28px;
+  display: flex;
+  justify-content: space-between;
+  margin: auto var(--side-tight) 0;
+  padding: 28px 0 22px;
 }
-.result-actions .btn { min-height: 54px; }
+
+/* 잡지 목록형 (결과 화면) — 왼쪽 정렬 큰 제목, 지면처럼 위에 굵은 줄 하나 */
+#screen-result .result-head { align-items: flex-start; padding: 104px 24px 64px; text-align: left; }
+#screen-result .result-title { padding: 0; font-size: 34px; line-height: 1.15; letter-spacing: -0.05em; }
+#screen-result .step-nav { justify-content: flex-start; padding-left: 16px; }
+.result-sheet { border-radius: 0; border-top: 2px solid var(--ink); }
+.place-card:first-child { border-top: 1px solid var(--line-2); }
+.place-card { border-bottom-color: var(--line-2); }
+.place-name { font-size: 22px; letter-spacing: -0.05em; }
+/* 정보: 회색 상자 대신 줄 */
+.place-fields { padding: 12px 0 0; border-top: 1px solid var(--line-2); border-radius: 0; background: none; }
+.result-message { background: none; border-left: 3px solid var(--marker); border-radius: 0; padding: 4px 0 4px 14px; }
 
 /* 처음 등장 모양 (motion.js가 순서대로 올려 줌). 스크립트가 없으면 그냥 보임 */
 .js-anim [data-anim],
