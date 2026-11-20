@@ -846,6 +846,8 @@ function renderMapButtons(place) {
 // 시작
 // ---------------------------------------------------------------------------
 $("btn-start").addEventListener("click", restart);
+// 시작 화면 아래쪽의 [지금 골라 보기] 버튼도 같은 동작
+document.querySelectorAll("[data-start]").forEach((b) => b.addEventListener("click", restart));
 $("btn-back").addEventListener("click", goBack);
 $("btn-next").addEventListener("click", choosePicked);
 // 처음부터 다시: 어느 단계에서 누르든 맨 첫 시작 화면으로 (1단계에서 눌러도 반응이 보이도록)
