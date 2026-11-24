@@ -668,6 +668,17 @@ h1, h2, h3, h4 { color: var(--ink); font-weight: 700; }
 }
 #screen-question .options .option.group-start + .option::before { left: -10px; right: 0; }
 
+/* 위치 단계: 보기 3개를 위에서 아래로 긴 가로 막대로 (칸 사이 얇은 선) */
+#screen-question[data-step="area"] .options { grid-template-columns: 1fr; gap: 0; }
+#screen-question[data-step="area"] .option {
+  min-height: 64px;
+  padding: 10px 14px;
+  font-size: 20px;
+  border-bottom: 1px solid var(--line-2);
+}
+#screen-question[data-step="area"] .option:last-child { border-bottom: 0; }
+#screen-question[data-step="area"] .option.is-selected::after { right: 14px; }
+
 /* 시트: 위쪽 둥근 모서리 대신 위에 굵은 줄 하나 (잡지 지면처럼)
    늘어나지 않고 내용만큼만 → 화면 아래쪽 절반 이하만 차지, 위는 사진이 보이게 */
 .q-sheet { flex: 0 0 auto; gap: 2px; border-radius: 0; border-top: 2px solid var(--ink); padding-top: 10px; padding-bottom: 8px; }
